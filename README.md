@@ -2,7 +2,7 @@
 <br>
 <br>
 Vorschau:<br>
-![Vorschau](https://i.ibb.co/zS53m2m/Screenshot-2024-08-02-073412.png)<br>
+![Vorschau](https://github.com/BloodDragon2580/WindowsServerStatus-DiscordBot/blob/main/vorschau.png)<br>
 <br>
 <br>
 Erklärung:<br>
