@@ -12,7 +12,7 @@ MESSAGE_ID_FILE = 'message_id.json'
 intents = discord.Intents.default()
 client = discord.Client(intents=intents)
 
-UPDATE_INTERVAL = 300  # Aktualisierungsintervall in Sekunden (10 Minuten)
+UPDATE_INTERVAL = 300  # Aktualisierungsintervall in Sekunden (5 Minuten)
 
 def get_server_status():
     cpu_usage = psutil.cpu_percent(interval=1)
