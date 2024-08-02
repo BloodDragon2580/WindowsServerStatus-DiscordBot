@@ -1,5 +1,10 @@
 # WindowsServerStatus DiscordBot
 <br>
+<br>
+Vorschau:<br>
+![alt text](https://i.ibb.co/zS53m2m/Screenshot-2024-08-02-073412.png)<br>
+<br>
+<br>
 Erklärung:<br>
 <br>
 get_server_status:<br>
