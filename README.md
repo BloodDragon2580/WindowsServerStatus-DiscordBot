@@ -1,68 +1,81 @@
-# WindowsServerStatus DiscordBot
 ![Logo](https://github.com/BloodDragon2580/WindowsServerStatus-DiscordBot/blob/main/vorschau.png)
 
-Um einen Discord-Bot in Python zu erstellen, 
-der den Status eines dedizierten Windows-Servers anzeigt, 
-benötigen wir einige grundlegende Komponenten:
+# Windows Server Status Discord Bot
 
-Discord Bot Setup: 
-Erstellen und konfigurieren Sie einen Bot in Discord und generieren Sie ein Token.
-Python-Bot-Programmierung: Schreiben Sie ein Python-Skript, um den Bot zu betreiben.
+Dieser Discord-Bot überwacht den Status eines Windows-Servers und ermöglicht es autorisierten Benutzern, den Server neu zu starten, herunterzufahren oder Updates durchzuführen. Der Bot verwendet `nextcord` für die Discord-Integration und `psutil` für die Systemüberwachung.
 
-Serverstatus-Erfassung: 
-Hier sind die Schritte, 
-um einen einfachen Discord-Bot zu erstellen, der den Serverstatus anzeigt:
+## Anforderungen
 
-1. Erstellen und konfigurieren Sie den Discord-Bot
-Gehe zu Discord Developer Portal.
-Klicke auf "New Application", gib deinem Bot einen Namen und erstelle die Anwendung.
-Gehe zum "Bot" Tab und klicke auf "Add Bot".
-Kopiere das Bot-Token, da es später im Code benötigt wird.
-Gehe zum "OAuth2" Tab, wähle "bot" unter "SCOPES" und wähle die 
-gewünschten Berechtigungen unter "BOT PERMISSIONS" aus (z.B. "Send Messages").
+1. **Python**: Der Bot erfordert Python 3.7 oder höher. Du kannst die neueste Version von [Python.org](https://www.python.org/downloads/) herunterladen und installieren.
 
-2. Installiere die benötigten Python-Bibliotheken
-Stelle sicher, dass du discord.py und psutil installiert hast. Verwende folgendes Terminal-Kommando:
+2. **Python-Bibliotheken**: Installiere die erforderlichen Python-Bibliotheken mit `pip`.
 
-pip install discord.py psutil
+3. **PowerShell-Modul**: Für das Ausführen von Windows-Updates wird das PowerShell-Modul `PSWindowsUpdate` benötigt.
 
+## Installation und Konfiguration
 
-Erklärung:
+### 1. Python und Bibliotheken installieren
 
-get_server_status:
-Diese Funktion sammelt jetzt auch die Festplatteninformationen und die Windows-Version.
+- Stelle sicher, dass Python installiert ist und `pip` verfügbar ist.
 
-Festplatteninformationen werden mit psutil.disk_usage('/') abgerufen.
-Die Windows-Version wird mit platform.platform() abgerufen.
+- Installiere die erforderlichen Python-Bibliotheken, indem du die folgenden Befehle ausführst:
 
-create_embed:
-Das Embed enthält nun Felder für die
-Festplatteninformationen und die Windows-Version.
+    ```bash
+    pip install nextcord psutil
+    ```
 
-update_status_message:
-Die Funktion erstellt und aktualisiert das Embed wie zuvor,
-aber jetzt mit den zusätzlichen Informationen.
+### 2. PowerShell-Modul `PSWindowsUpdate` installieren
 
+- Öffne PowerShell als Administrator.
 
-Schritte zum Ausführen:
-Ersetzen Sie YOUR_DISCORD_BOT_TOKEN durch das Token Ihres Bots.
-Ersetzen Sie YOUR_CHANNEL_ID durch die ID des Discord-Kanals, in den der Bot schreiben soll.
+- Installiere das `PSWindowsUpdate`-Modul:
 
-Speichern Sie das Python-Skript und führen Sie es aus:
+    ```powershell
+    Install-Module -Name PSWindowsUpdate -Scope CurrentUser
+    ```
 
+- Importiere das Modul:
 
-sh:
-python bot.py
+    ```powershell
+    Import-Module PSWindowsUpdate
+    ```
 
-Windows:
-Einfach die WindowsServerStausBot Starten.bat
-zum Starten benutzen.
+### 3. Bot konfigurieren
 
+- Ersetze die Platzhalter in der Konfigurationsdatei `WindowsServerStatusBot.py`:
 
-Der Bot sollte nun eine Embed-Nachricht erstellen,
-die die CPU-Auslastung, Speicherauslastung,
-Festplatteninformationen und die Windows-Version anzeigt
-und diese alle 10 Sekunden mit dem verbleibenden
-Timer bis zur nächsten Aktualisierung aktualisiert.
-Beim Neustart des Bots wird dieselbe Nachricht bearbeitet,
-anstatt eine neue zu erstellen.
+    ```python
+    TOKEN = 'YOUR_DISCORD_BOT_TOKEN'
+    CHANNEL_ID = 1268630310946471966  # Ersetze dies durch die Kanal-ID, in die der Bot schreiben soll
+    AUTHORIZED_USER_IDS = [184339420621701121, 406087448192614411, 1268627403085844592]  # Ersetzen Sie dies durch die Benutzer-IDs, die Zugriff haben sollen
+    ```
+
+    - `YOUR_DISCORD_BOT_TOKEN`: Dein Discord-Bot-Token, das du von der [Discord Developer Portal](https://discord.com/developers/applications) erhältst.
+    - `CHANNEL_ID`: Die ID des Discord-Kanals, in dem der Bot Nachrichten senden soll.
+    - `AUTHORIZED_USER_IDS`: Eine Liste von Discord-Benutzer-IDs, die Berechtigung für die Admin-Buttons haben.
+
+### 4. Bot starten
+
+- Speichere die Änderungen an deiner `WindowsServerStatusBot.py`-Datei.
+
+- Starte den Bot, indem du im Terminal den folgenden Befehl ausführst:
+
+    ```bash
+    python WindowsServerStatusBot.py
+    ```
+
+## Verwendung
+
+- Der Bot sendet regelmäßig Statusaktualisierungen in den angegebenen Kanal.
+- Autorisierte Benutzer können den Server neu starten, herunterfahren und Windows-Updates durchführen, indem sie die entsprechenden Buttons im Kanal verwenden.
+
+## Fehlersuche
+
+- **Bot kann nicht starten**: Überprüfe, ob alle Python-Bibliotheken installiert sind und ob das Token korrekt ist.
+- **Buttons nicht sichtbar**: Stelle sicher, dass die `CHANNEL_ID` korrekt ist und dass der Bot über die erforderlichen Berechtigungen verfügt.
+- **Updates werden nicht ausgeführt**: Stelle sicher, dass das PowerShell-Modul `PSWindowsUpdate` installiert und korrekt konfiguriert ist.
+
+## Lizenz
+
+Dieser Bot ist unter der MIT-Lizenz lizenziert. Siehe [LICENSE](LICENSE) für Details.
+
