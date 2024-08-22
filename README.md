@@ -45,9 +45,11 @@ Dieser Discord-Bot überwacht den Status eines Windows-Servers und ermöglicht e
 - Ersetze die Platzhalter in der Konfigurationsdatei `WindowsServerStatusBot.py`:
 
     ```python
-    TOKEN = 'YOUR_DISCORD_BOT_TOKEN'
-    CHANNEL_ID = 1268630310946471966  # Ersetze dies durch die Kanal-ID, in die der Bot schreiben soll
-    AUTHORIZED_USER_IDS = [184339420621701121, 406087448192614411, 1268627403085844592]  # Ersetzen Sie dies durch die Benutzer-IDs, die Zugriff haben sollen
+	TOKEN = 'YOUR_DISCORD_BOT_TOKEN'
+	CHANNEL_ID = YOUR_CHANNEL_ID  # Ersetze dies durch die Kanal-ID, in die der Bot schreiben soll
+	MESSAGE_ID_FILE = 'message_id.json'
+	AUTHORIZED_USER_IDS = [Admin ID, Admin ID, Admin ID]  # Ersetzen Sie dies durch die Benutzer-IDs, die Zugriff haben sollen
+	SCRIPT_VERSION = "1.0.0"  # Definiere die Version deines Skripts
     ```
 
     - `YOUR_DISCORD_BOT_TOKEN`: Dein Discord-Bot-Token, das du von der [Discord Developer Portal](https://discord.com/developers/applications) erhältst.
