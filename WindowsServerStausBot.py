@@ -7,11 +7,13 @@ import os
 import json
 import platform
 import subprocess
+import aiohttp  # Wichtig für die Fehlerbehandlung bei Netzwerkproblemen
 
 TOKEN = 'YOUR_DISCORD_BOT_TOKEN'
 CHANNEL_ID = YOUR_CHANNEL_ID  # Ersetze dies durch die Kanal-ID, in die der Bot schreiben soll
 MESSAGE_ID_FILE = 'message_id.json'
 AUTHORIZED_USER_IDS = [Admin ID, Admin ID, Admin ID]  # Ersetzen Sie dies durch die Benutzer-IDs, die Zugriff haben sollen
+SCRIPT_VERSION = "1.0.0"  # Definiere die Version deines Skripts
 
 intents = nextcord.Intents.default()
 intents.guilds = True
@@ -55,7 +57,8 @@ def create_embed(next_update_in):
     embed.add_field(name="Festplatte Benutzt", value=f"{status['disk_used']:.2f} GB ({status['disk_percent']}%)", inline=False)
     embed.add_field(name="Festplatte Frei", value=f"{status['disk_free']:.2f} GB", inline=False)
     embed.add_field(name="Windows Version", value=status['windows_version'], inline=False)
-    embed.set_footer(text=f"Nächste Aktualisierung in: {next_update_in} Sekunden")
+    embed.add_field(name="Bot Version", value=SCRIPT_VERSION, inline=False)  # Versionsnummer des Skripts
+    embed.set_footer(text=f"Created by BloodDragon | Nächste Aktualisierung in: {next_update_in} Sekunden")
     return embed
 
 class AdminActions(View):
@@ -69,6 +72,7 @@ class AdminActions(View):
             print(f"Initialisiere AdminActions für Benutzer-ID: {self.user_id}")
             self.add_item(RestartButton())
             self.add_item(ShutdownButton())
+            self.add_item(CheckUpdatesButton())
 
     def is_authorized(self, user_id):
         return user_id in AUTHORIZED_USER_IDS
@@ -107,6 +111,29 @@ class ShutdownButton(Button):
     def is_authorized(self, user_id):
         return user_id in AUTHORIZED_USER_IDS
 
+class CheckUpdatesButton(Button):
+    def __init__(self):
+        super().__init__(label="Windows Updates Prüfen", style=nextcord.ButtonStyle.primary, custom_id="check_updates_button")
+
+    async def callback(self, interaction: nextcord.Interaction):
+        if self.is_authorized(interaction.user.id):
+            try:
+                await interaction.response.send_message("Updates werden geprüft und installiert...", ephemeral=True)
+                # Führt Windows Update durch
+                result = subprocess.run(["powershell", "-Command", "Install-WindowsUpdate -AcceptAll -AutoReboot"], capture_output=True, text=True)
+                output = result.stdout + result.stderr
+                if result.returncode == 0:
+                    await interaction.followup.send("Windows Updates wurden erfolgreich durchgeführt.", ephemeral=True)
+                else:
+                    await interaction.followup.send(f"Fehler beim Durchführen der Updates: {output}", ephemeral=True)
+            except Exception as e:
+                await interaction.followup.send(f"Fehler beim Prüfen der Updates: {e}", ephemeral=True)
+        else:
+            await interaction.response.send_message("Du hast keine Berechtigung, Windows Updates durchzuführen.", ephemeral=True)
+
+    def is_authorized(self, user_id):
+        return user_id in AUTHORIZED_USER_IDS
+
 async def update_status_message():
     await bot.wait_until_ready()
     channel = bot.get_channel(CHANNEL_ID)
@@ -129,23 +156,37 @@ async def update_status_message():
     while not bot.is_closed():
         for remaining_time in range(UPDATE_INTERVAL, 0, -10):
             embed = create_embed(remaining_time)
-            view = AdminActions(bot.user.id)  # Buttons für autorisierte Benutzer hinzufügen
-            if message is None:
-                message = await channel.send(embed=embed, view=view)
-                with open(MESSAGE_ID_FILE, 'w') as f:
-                    json.dump({'message_id': message.id}, f)
-            else:
-                await message.edit(embed=embed, view=view)
+            try:
+                if message is None:
+                    message = await channel.send(embed=embed)
+                    with open(MESSAGE_ID_FILE, 'w') as f:
+                        json.dump({'message_id': message.id}, f)
+                else:
+                    await message.edit(embed=embed)
+            except (nextcord.errors.DiscordServerError, asyncio.TimeoutError, aiohttp.ClientOSError) as e:
+                print(f"Fehler beim Bearbeiten der Nachricht: {e}")
+                await asyncio.sleep(60)  # Warte 60 Sekunden vor dem erneuten Versuch
+
             await asyncio.sleep(10)  # Aktualisiere alle 10 Sekunden den Timer
 
         # Aktualisiere den Status und den Timer auf das volle Intervall
         embed = create_embed(UPDATE_INTERVAL)
         view = AdminActions(bot.user.id)
-        await message.edit(embed=embed, view=view)
+        try:
+            await message.edit(embed=embed, view=view)
+        except (nextcord.errors.DiscordServerError, asyncio.TimeoutError, aiohttp.ClientOSError) as e:
+            print(f"Fehler beim Bearbeiten der Nachricht: {e}")
+            await asyncio.sleep(60)  # Warte 60 Sekunden vor dem erneuten Versuch
 
 @bot.event
 async def on_ready():
     print(f'We have logged in as {bot.user}')
     bot.loop.create_task(update_status_message())
+
+@bot.event
+async def on_message(message):
+    if message.author.id in AUTHORIZED_USER_IDS and message.content.lower().startswith('!showbuttons'):
+        view = AdminActions(message.author.id)
+        await message.channel.send("Admin-Aktionen", view=view)
 
 bot.run(TOKEN)
